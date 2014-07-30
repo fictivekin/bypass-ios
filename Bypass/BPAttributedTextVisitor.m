@@ -397,7 +397,18 @@ NSString *const BPLinkTitleAttributeName = @"BPLinkTitleAttributeName";
     [paragraphStyle setLineSpacing:[_displaySettings paragraphLineSpacingHeading]];
     [paragraphStyle setFirstLineHeadIndent:[_displaySettings headerFirstLineHeadIndent]];
     [paragraphStyle setHeadIndent:[_displaySettings headerHeadIndent]];
-    
+    NSMethodSignature *setHeaderSignature = [paragraphStyle methodSignatureForSelector:@selector(setHeaderLevel:)];
+    NSDictionary *elementAttributes = element.attributes;
+    if(setHeaderSignature != nil && elementAttributes[@"level"] != nil){
+        NSInteger level;
+        level = [elementAttributes[@"level"] integerValue];
+        NSInvocation *setHeaderLevelInvocation = [NSInvocation invocationWithMethodSignature:setHeaderSignature];
+        setHeaderLevelInvocation.target = paragraphStyle;
+        setHeaderLevelInvocation.selector = @selector(setHeaderLevel:);
+        [setHeaderLevelInvocation setArgument:&level atIndex:2];
+        [setHeaderLevelInvocation invoke];
+    }
+
     attributes[NSParagraphStyleAttributeName] = paragraphStyle;
     
     // Override font weight and size attributes (but preserve all other attributes)
