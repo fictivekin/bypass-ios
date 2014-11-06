@@ -387,6 +387,16 @@ NSString *const BPLinkTitleAttributeName = @"BPLinkTitleAttributeName";
     return insertedCharacters;
 }
 
+SEL setHeaderSelector ()
+{
+    static SEL _setHeaderSelector = NULL;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _setHeaderSelector = NSSelectorFromString(@"setHeaderLevel:");
+    });
+    return _setHeaderSelector;
+}
+
 - (void)renderHeaderElement:(BPElement *)element
                     inRange:(NSRange)effectiveRange
                    toTarget:(NSMutableAttributedString *)target
@@ -397,14 +407,16 @@ NSString *const BPLinkTitleAttributeName = @"BPLinkTitleAttributeName";
     [paragraphStyle setLineSpacing:[_displaySettings paragraphLineSpacingHeading]];
     [paragraphStyle setFirstLineHeadIndent:[_displaySettings headerFirstLineHeadIndent]];
     [paragraphStyle setHeadIndent:[_displaySettings headerHeadIndent]];
-    NSMethodSignature *setHeaderSignature = [paragraphStyle methodSignatureForSelector:@selector(setHeaderLevel:)];
+
+    
+    NSMethodSignature *setHeaderSignature = [paragraphStyle methodSignatureForSelector:setHeaderSelector()];
     NSDictionary *elementAttributes = element.attributes;
     if(setHeaderSignature != nil && elementAttributes[@"level"] != nil){
         NSInteger level;
         level = [elementAttributes[@"level"] integerValue];
         NSInvocation *setHeaderLevelInvocation = [NSInvocation invocationWithMethodSignature:setHeaderSignature];
         setHeaderLevelInvocation.target = paragraphStyle;
-        setHeaderLevelInvocation.selector = @selector(setHeaderLevel:);
+        setHeaderLevelInvocation.selector = setHeaderSelector();
         [setHeaderLevelInvocation setArgument:&level atIndex:2];
         [setHeaderLevelInvocation invoke];
     }
